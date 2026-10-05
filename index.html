@@ -10,6 +10,21 @@
 <body>
   <!-- visible content here -->
    <h1> My School Planner </h1>
+   <section class="classroom-import">
+  <h2>Google Classroom</h2>
+  <p>Connect your account to import assignments.</p>
+
+  <a href="/auth/google" class="connect-button">
+    Connect Google Classroom
+  </a>
+
+  <button id="load-courses" type="button">
+    Load Classroom Courses
+  </button>
+
+  <p id="classroom-message"></p>
+  <div id="classroom-courses"></div>
+</section>
    <section>
      <form id="assignment-form" class="assignment-form">
   <label for="assignment-name">Assignment Name:</label>

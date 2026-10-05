@@ -32,6 +32,15 @@ function displayAssignment(assignment) {
   const date = document.createElement("p");
   date.textContent = `Due: ${new Date(`${assignment.dueDate}T00:00:00`).toLocaleDateString()}`;
   newAssignment.append(date);
+if (assignment.classroomLink) {
+  const classroomLink = document.createElement("a");
+
+  classroomLink.href = assignment.classroomLink;
+  classroomLink.textContent = "Open in Google Classroom";
+  classroomLink.target = "_blank";
+
+  newAssignment.append(classroomLink);
+}
 
   const completeLabel = document.createElement("label");
   const completeBox = document.createElement("input");
@@ -84,3 +93,131 @@ form.addEventListener("submit", function (event) {
 assignments.forEach(function (assignment) {
   displayAssignment(assignment);
 });
+const loadCoursesButton = document.querySelector("#load-courses");
+const classroomMessage = document.querySelector("#classroom-message");
+const classroomCourses = document.querySelector("#classroom-courses");
+
+loadCoursesButton.addEventListener("click", async function () {
+  classroomMessage.textContent = "Loading Classroom courses...";
+  classroomCourses.innerHTML = "";
+
+  try {
+    const response = await fetch("/api/courses");
+
+    if (!response.ok) {
+      throw new Error("Could not load courses.");
+    }
+
+    const courses = await response.json();
+
+    if (courses.length === 0) {
+      classroomMessage.textContent = "No active Classroom courses found.";
+      return;
+    }
+
+    classroomMessage.textContent = "Your Classroom courses:";
+
+    courses.forEach(function (course) {
+      const courseButton = document.createElement("button");
+
+      courseButton.type = "button";
+      courseButton.textContent = course.name;
+
+courseButton.addEventListener("click", function () {
+  loadClassroomAssignments(course);
+});
+
+classroomCourses.append(courseButton);
+    });
+  } catch (error) {
+    classroomMessage.textContent =
+      "Could not load courses. Connect your Google account, then try again.";
+  }
+});
+async function loadClassroomAssignments(course) {
+  classroomMessage.textContent = `Loading assignments from ${course.name}...`;
+  classroomCourses.innerHTML = "";
+
+  try {
+    const response = await fetch(
+      `/api/courses/${course.id}/assignments`
+    );
+
+    if (!response.ok) {
+      throw new Error("Could not load assignments.");
+    }
+
+    const classroomAssignments = await response.json();
+
+    if (classroomAssignments.length === 0) {
+      classroomMessage.textContent =
+        `No published assignments found in ${course.name}.`;
+      return;
+    }
+
+    classroomMessage.textContent =
+      `Assignments from ${course.name}:`;
+
+    classroomAssignments.forEach(function (classroomAssignment) {
+      const assignmentCard = document.createElement("article");
+      const title = document.createElement("h3");
+      const date = document.createElement("p");
+
+      assignmentCard.classList.add("assignment");
+      title.textContent = classroomAssignment.title;
+
+      if (classroomAssignment.dueDate) {
+        const due = classroomAssignment.dueDate;
+        date.textContent =
+          `Due: ${due.month}/${due.day}/${due.year}`;
+      } else {
+        date.textContent = "No due date";
+      }
+
+      const importButton = document.createElement("button");
+const alreadyImported = assignments.some(function (assignment) {
+  return assignment.googleId === classroomAssignment.id;
+});
+
+if (alreadyImported) {
+  importButton.textContent = "Already Imported";
+  importButton.disabled = true;
+} else {
+  importButton.textContent = "Import to Planner";
+
+  importButton.addEventListener("click", function () {
+    let dueDate = "";
+
+    if (classroomAssignment.dueDate) {
+      const due = classroomAssignment.dueDate;
+      dueDate =
+        `${due.year}-${String(due.month).padStart(2, "0")}-${String(due.day).padStart(2, "0")}`;
+    }
+
+    const importedAssignment = {
+      name: classroomAssignment.title,
+      course: course.name,
+      priority: "medium",
+      dueDate: dueDate,
+      completed: false,
+      googleId: classroomAssignment.id,
+      classroomLink: classroomAssignment.alternateLink
+    };
+
+    assignments.push(importedAssignment);
+    saveAssignments();
+    displayAssignment(importedAssignment);
+
+    importButton.textContent = "Imported";
+    importButton.disabled = true;
+  });
+}
+
+assignmentCard.append(title, date, importButton);
+classroomCourses.append(assignmentCard);
+    });
+  } catch (error) {
+    classroomMessage.textContent =
+      "Could not load assignments. Try connecting Google Classroom again.";
+  }
+}

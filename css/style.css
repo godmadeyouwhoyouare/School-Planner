@@ -72,3 +72,36 @@ body{
     background: #e11717;
     cursor: pointer;
 }
+.classroom-import {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 600px;
+  margin: 20px auto;
+}
+
+.classroom-import button,
+.connect-button {
+  padding: 10px;
+  margin: 6px 4px 6px 0;
+  border: none;
+  border-radius: 8px;
+  background: #bc862e;
+  color: white;
+  cursor: pointer;
+}
+
+.connect-button {
+  display: inline-block;
+  text-decoration: none;
+}
+
+#classroom-courses {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.assignment a {
+  color: #1a5fb4;
+}
